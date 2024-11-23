@@ -1,0 +1,524 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace Fase4_Problema3_DanielCantor
+{
+    public class Inventarios
+    {
+        private string nombre;
+        private string documento;//nuevo
+        private string elemento;//nuevo
+        private string id;
+        private string condición;
+        private string estrato;
+        private string terapia;
+        private string fecha;
+
+
+        public Inventarios(string name, string documento, string elemento, string id, string condi, string estrat, string terapia, string date)
+        {
+            this.nombre = name;
+            this.documento = documento;//nuevo
+            this.elemento = elemento;//nuevo
+            this.id= id;
+            this.condición = condi;
+            this.estrato = estrat;
+            this.terapia = terapia; 
+            this.fecha = date;
+        }
+
+        public string Nombre { get { return nombre; } set { nombre = value; } }
+        public string Documento { get { return documento; } set { documento = value; } }//nuevo
+        public string Elemento { get { return elemento; } set { elemento = value; } }//nuevo
+        public string Placa { get { return id; } set { id = value; } }
+        public string Estado { get { return condición; } set { condición = value; } }
+        public string Dependencia { get {  return estrato; } set {  estrato = value; } }//modificado
+        public string Mantenimiento { get { return terapia; } set { terapia = value; } }
+        public string Fecha { get {  return fecha; } set {  fecha = value; } }
+
+        public static void SoloLetras(KeyPressEventArgs V)
+        {
+            if (Char.IsLetter(V.KeyChar)) { V.Handled = false; }
+            else if (Char.IsSeparator(V.KeyChar)) { V.Handled = false; }
+            else if (Char.IsControl(V.KeyChar)) { V.Handled = false; }
+            else { V.Handled = true; MessageBox.Show(" Solo se admiten letras"); }
+        }
+        public static void SoloNumeros(KeyPressEventArgs V)
+        {
+            if (Char.IsDigit(V.KeyChar)) { V.Handled = false; }
+            else if (Char.IsSeparator(V.KeyChar)) { V.Handled = false; }
+            else if (Char.IsControl(V.KeyChar)) { V.Handled = false; }
+            else { V.Handled = true; MessageBox.Show(" Solo se admiten números"); }
+        }
+
+    }
+}
+
+
+using System.Linq;
+using System.Windows.Forms;
+
+
+namespace Fase3_Problema3_DanielCantor
+{
+    public partial class Form3 : Form
+    {
+        public Form3()
+        {
+            InitializeComponent();
+        }
+        public string terapia;
+        List<Inventarios> list = new List<Inventarios>();
+
+        private void registrarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Inventarios jardin = new Inventarios(txtNombre.Text, txtdocumento.Text, txtelemento.Text, txtId.Text, cbCondición.Text, cbEstrato.Text, terapia, dateTimePicker1.Text);
+
+            if (txtNombre.Text == "")
+            {
+                MessageBox.Show("Registrar nombre");
+                txtNombre.Focus();
+            }
+            else if (txtdocumento.Text == "")
+            {
+                MessageBox.Show("Registrar Identificación");//nuevo
+                txtId.Focus();
+            }
+            else if (txtelemento.Text == "")
+            {
+                MessageBox.Show("Registrar Descripción del Elemento");//nuevo
+                txtId.Focus();
+            }
+            else if (txtId.Text == "")
+            {
+                MessageBox.Show("Registrar Número de Placa");
+                txtId.Focus();
+            }
+            else if (rbSí.Checked == false && rbNo.Checked == false)
+            {
+                MessageBox.Show("Seleccionar apartado Terapia");
+                rbSí.Focus();
+            }
+            else if (cbCondición.Text == "")
+            {
+                MessageBox.Show("Seleccionar Condición");
+                cbCondición.Focus();
+            }
+            else if (cbEstrato.Text == "")
+            {
+                MessageBox.Show("Seleccionar Estrato");
+                cbEstrato.Focus();
+            }
+            else if (list.Any(x => x.Placa == jardin.Placa))
+            {
+
+                MessageBox.Show("El ID ya está registrado en la lista.");
+                txtId.Text = string.Empty;
+            }
+
+            else
+            {
+                list.Add(jardin);
+                dgv.DataSource = null;
+                dgv.DataSource = list.ToArray();
+                Limpiar();
+                txtNombre.Focus();
+            }
+        }
+        private void Limpiar()
+        {
+            txtNombre.Text = string.Empty;
+            txtdocumento.Text = string.Empty;//nuevo
+            txtelemento.Text = string.Empty;//nuevo
+            txtId.Text = string.Empty;
+            cbCondición.Text = string.Empty;
+            cbEstrato.Text = string.Empty;
+            gbTerapia.Text = string.Empty;
+        }
+
+
+
+        private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Inventarios.SoloLetras(e);
+        }
+
+        private void gbTerapia_Enter(object sender, EventArgs e)
+        {
+            if (rbSí.Checked == false) { terapia = "Sí"; } else { terapia = "No"; }
+        }
+
+        private void consultarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void eliminarToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var result = list.FirstOrDefault(x => x.Placa == txtId.Text);
+
+            if (result != null)
+            {
+                DialogResult option;
+                option = MessageBox.Show("Confirmar", "Eliminar registro", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (option == DialogResult.Yes)
+                {
+                    list.Remove(result);
+                    dgv.DataSource = null;
+                    dgv.DataSource = list.ToArray();
+                    Limpiar();
+                    txtNombre.Focus();
+                }
+                else
+                {
+                    Limpiar();
+                    txtNombre.Focus();
+                }
+            }
+        }
+        private void consultarRegistroPorNúmeroDeIdentificaciónToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+           Inventarios jardin = new Inventarios(txtNombre.Text, txtdocumento.Text, txtelemento.Text, txtId.Text, cbCondición.Text, cbEstrato.Text, terapia, dateTimePicker1.Text);
+
+            var result = list.FirstOrDefault(x => x.Placa == txtId.Text);
+
+            if (result != null)
+            {
+                txtNombre.Text = result.Nombre;
+                txtdocumento.Text = result.Documento;//nuevo
+                txtelemento.Text = result.Elemento;//nuevo        CAMBIAR NOMBRE COLUMNA - 
+                cbCondición.Text = result.Mantenimiento;
+                cbEstrato.Text = result.Dependencia;
+
+            }
+            //else if ()
+            else
+            {
+                MessageBox.Show("Identificación no registrada, \ningrese un número de documento");
+            }
+
+        }
+        private void salirToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult option;
+            option = MessageBox.Show("Confirmar", "Salir del Programa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (option == DialogResult.Yes)
+            {
+                this.Hide();
+            }
+            else { }
+            //Application.Exit();
+
+        }
+        private void identificaciónToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtId_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Inventarios.SoloNumeros(e);
+        }
+
+        private void txtdocumento_TextChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void txtNombre_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
+
+
+using Fase3_Problema1_DanielCantor;
+using Fase3_Problema2_DanielCantor;
+using Fase3_Problema3_DanielCantor;
+
+namespace Fase3_DanielCantor
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+
+        private void txtPass_Click(object sender, EventArgs e)
+        {
+
+            if (textPass.Text != "")
+            {
+                if (textPass.Text == "123")
+                {
+                    Start i = new Start();
+                    i.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    MessageBox.Show("Clave incorrecta");
+                    textPass.Text = "";
+                    textPass.Focus();
+                }
+            }
+            else
+            {
+                MessageBox.Show("Ingrese la clave");
+
+            }
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exit_Click(object sender, EventArgs e)
+        {
+            DialogResult option;
+            option = MessageBox.Show("Confirmar", "Salir del Programa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (option == DialogResult.Yes)
+            {
+                Application.Exit();
+            }
+            else { }          
+        }
+    }
+}
+
+
+using Fase3_Problema1_DanielCantor;
+using Fase3_Problema2_DanielCantor;
+using Fase3_Problema3_DanielCantor;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Fase3_DanielCantor
+{
+    public partial class Start : Form
+    {
+        public Start()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //Form2 form2 = new Form2();
+            //form2.ShowDialog();
+            //this.Hide();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            
+            imprimir form1 = new imprimir();
+            form1.ShowDialog();
+            //this.Hide();
+            
+        }
+
+
+
+        private void lQueue_Click(object sender, EventArgs e)
+        {
+            Form2 form2 = new Form2();
+            form2.ShowDialog();
+            //this.Hide();
+        }
+
+        private void labelList1_Click(object sender, EventArgs e)
+        {
+            Form3 form3 = new Form3();
+            form3.ShowDialog();
+            //this.Hide();
+
+        }
+
+        private void salir_Click(object sender, EventArgs e)
+        {
+            DialogResult option;
+            option = MessageBox.Show("Confirmar", "Salir del Programa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (option == DialogResult.Yes)
+            {
+                Application.Exit();
+            }
+            else { }
+            
+        }
+        private void label2_MouseHover(object sender, EventArgs e)
+        {
+            label2.ForeColor = Color.Yellow;
+        }
+
+        private void label2_MouseLeave(object sender, EventArgs e)
+        {
+            label2.ForeColor = Color.White;
+        }
+
+        private void lQueue_MouseHover(object sender, EventArgs e)
+        {
+            lQueue.ForeColor = Color.Yellow;
+        }
+
+        private void lQueue_MouseLeave(object sender, EventArgs e)
+        {
+            lQueue.ForeColor = Color.White;
+        }
+
+        private void labelList1_MouseHover(object sender, EventArgs e)
+        {
+            labelList1.ForeColor = Color.Yellow;
+        }
+
+        private void labelList1_MouseLeave(object sender, EventArgs e)
+        {
+            labelList1.ForeColor = Color.White;
+        }
+
+        private void salir_MouseHover(object sender, EventArgs e)
+        {
+            salir.ForeColor = Color.Red;
+        }
+
+        private void salir_MouseLeave(object sender, EventArgs e)
+        {
+            salir.ForeColor = Color.White;
+        }
+    }
+}
+
+using Fase3_Problema1_DanielCantor;
+using Fase3_Problema2_DanielCantor;
+using Fase3_Problema3_DanielCantor;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace Fase3_DanielCantor
+{
+    public partial class Start : Form
+    {
+        public Start()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            //Form2 form2 = new Form2();
+            //form2.ShowDialog();
+            //this.Hide();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            
+            imprimir form1 = new imprimir();
+            form1.ShowDialog();
+            //this.Hide();
+            
+        }
+
+
+
+        private void lQueue_Click(object sender, EventArgs e)
+        {
+            Form2 form2 = new Form2();
+            form2.ShowDialog();
+            //this.Hide();
+        }
+
+        private void labelList1_Click(object sender, EventArgs e)
+        {
+            Form3 form3 = new Form3();
+            form3.ShowDialog();
+            //this.Hide();
+
+        }
+
+        private void salir_Click(object sender, EventArgs e)
+        {
+            DialogResult option;
+            option = MessageBox.Show("Confirmar", "Salir del Programa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (option == DialogResult.Yes)
+            {
+                Application.Exit();
+            }
+            else { }
+            
+        }
+        private void label2_MouseHover(object sender, EventArgs e)
+        {
+            label2.ForeColor = Color.Yellow;
+        }
+
+        private void label2_MouseLeave(object sender, EventArgs e)
+        {
+            label2.ForeColor = Color.White;
+        }
+
+        private void lQueue_MouseHover(object sender, EventArgs e)
+        {
+            lQueue.ForeColor = Color.Yellow;
+        }
+
+        private void lQueue_MouseLeave(object sender, EventArgs e)
+        {
+            lQueue.ForeColor = Color.White;
+        }
+
+        private void labelList1_MouseHover(object sender, EventArgs e)
+        {
+            labelList1.ForeColor = Color.Yellow;
+        }
+
+        private void labelList1_MouseLeave(object sender, EventArgs e)
+        {
+            labelList1.ForeColor = Color.White;
+        }
+
+        private void salir_MouseHover(object sender, EventArgs e)
+        {
+            salir.ForeColor = Color.Red;
+        }
+
+        private void salir_MouseLeave(object sender, EventArgs e)
+        {
+            salir.ForeColor = Color.White;
+        }
+    }
+}
+
